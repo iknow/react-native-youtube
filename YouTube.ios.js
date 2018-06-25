@@ -106,8 +106,16 @@ export default class YouTube extends React.Component {
     if (this.props.onProgress) this.props.onProgress(event.nativeEvent);
   };
 
-  seekTo(seconds) {
-    NativeModules.YouTubeManager.seekTo(ReactNative.findNodeHandle(this), parseInt(seconds, 10));
+  play() {
+    NativeModules.YouTubeManager.playVideo(ReactNative.findNodeHandle(this));
+  }
+
+  pause() {
+    NativeModules.YouTubeManager.pauseVideo(ReactNative.findNodeHandle(this));
+  }
+
+  seekTo(seconds, allowSeekAhead) {
+    NativeModules.YouTubeManager.seekTo(ReactNative.findNodeHandle(this), parseInt(seconds, 10), allowSeekAhead || true);
   }
 
   nextVideo() {
@@ -139,6 +147,14 @@ export default class YouTube extends React.Component {
     return new Promise((resolve, reject) =>
       NativeModules.YouTubeManager.currentTime(ReactNative.findNodeHandle(this))
         .then(currentTime => resolve(currentTime))
+        .catch(errorMessage => reject(errorMessage)),
+    );
+  }
+
+  duration() {
+    return new Promise((resolve, reject) =>
+      NativeModules.YouTubeManager.duration(ReactNative.findNodeHandle(this))
+        .then(duration => resolve(duration))
         .catch(errorMessage => reject(errorMessage)),
     );
   }

@@ -34,12 +34,36 @@ RCT_EXPORT_VIEW_PROPERTY(onChangeQuality, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onChangeFullscreen, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onProgress, RCTDirectEventBlock);
 
-RCT_EXPORT_METHOD(seekTo:(nonnull NSNumber *)reactTag seconds:(nonnull NSNumber *)seconds)
+RCT_EXPORT_METHOD(playVideo:(nonnull NSNumber *)reactTag)
 {
     [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
         RCTYouTube *youtube = (RCTYouTube*)viewRegistry[reactTag];
         if ([youtube isKindOfClass:[RCTYouTube class]]) {
-            [youtube seekToSeconds:seconds.floatValue allowSeekAhead:YES];
+            [youtube playVideo];
+        } else {
+            RCTLogError(@"Cannot playVideo: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(pauseVideo:(nonnull NSNumber *)reactTag)
+{
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = (RCTYouTube*)viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            [youtube pauseVideo];
+        } else {
+            RCTLogError(@"Cannot pauseVideo: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(seekTo:(nonnull NSNumber *)reactTag seconds:(nonnull NSNumber *)seconds allowSeekAhead:(nonnull NSNumber *)allowSeekAhead)
+{
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = (RCTYouTube*)viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            [youtube seekToSeconds:seconds.floatValue allowSeekAhead:allowSeekAhead.boolValue];
         } else {
             RCTLogError(@"Cannot seekTo: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
         }
@@ -114,6 +138,24 @@ RCT_EXPORT_METHOD(currentTime:(nonnull NSNumber *)reactTag resolver:(RCTPromiseR
             }
         } else {
             RCTLogError(@"Cannot currentTime: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(duration:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = (RCTYouTube*)viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            NSNumber *index = [NSNumber numberWithInt:[youtube duration]];
+            if (index) {
+                resolve(index);
+            } else {
+                NSError *error = nil;
+                reject(@"Error getting duration of video from RCTYouTube", @"", error);
+            }
+        } else {
+            RCTLogError(@"Cannot duration: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
         }
     }];
 }
